@@ -99,7 +99,6 @@ def get_metrics(model1=None,X=None,y=None):
   rec=recall_score(y,y_pred,average='macro')
   f1=f1_score(y,y_pred,average='macro')
   auc=roc_auc_score(y,y_pred_prob,average='macro',multi_class='ovr')
-  # write your code here...
   return acc, prec, rec, f1, auc
 
 def get_paramgrid_lr():
