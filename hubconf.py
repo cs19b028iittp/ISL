@@ -1,77 +1,106 @@
-
-from sklearn.datasets import make_blobs, make_circles, load_digits
-import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
-from sklearn.linear_model import LogisticRegression
+# kali
+import torch
 import numpy as np
+from torch import nn
+import torch.optim as optim
+import sklearn
+from sklearn.datasets import make_blobs
+from sklearn.datasets import make_circles
 from sklearn.cluster import KMeans
-from sklearn.metrics.cluster import homogeneity_score, completeness_score, v_measure_score
+from sklearn.datasets import load_digits
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import precision_score, recall_score, f1_score
-from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import cross_validate
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import f1_score
+from sklearn.metrics import roc_auc_score
+# You can import whatever standard packages are required
 
+# full sklearn, full pytorch, pandas, matplotlib, numpy are all available
+# Ideally you do not need to pip install any other packages!
+# Avoid pip install requirement on the evaluation program side, if you use above packages and sub-packages of them, then that is fine!
 
 ###### PART 1 ######
 
 def get_data_blobs(n_points=100):
-  X, y =  make_blobs(n_samples=n_points, centers=3, n_features=2,random_state=0)
+  pass
+  # write your code here
+  # Refer to sklearn data sets
+  X, y = make_blobs(n_samples=n_points, centers=3, n_features=2, random_state=0)
   return X,y
 
 def get_data_circles(n_points=100):
-  X, y = make_circles(n_samples=n_points, shuffle=True,  factor=0.8, random_state=0)
+  pass
+  # write your code here
+  # Refer to sklearn data sets
+  X, y = make_circles(n_samples=n_points, noise=0.1, factor=0.2, random_state=1)
+  # write your code ...
   return X,y
 
 def get_data_mnist():
-  digits = load_digits()
-  X=digits.data
-  y=digits.target
+  pass
+  # write your code here
+  # Refer to sklearn data sets
+  X, y = load_digits(return_X_y=True)
   return X,y
 
 def build_kmeans(X=None,k=10):
-  km = KMeans(n_clusters=k, random_state=0)
-  km.fit(X)
+  pass
+  # k is a variable, calling function can give a different number
+  # Refer to sklearn KMeans method
+  # this is the KMeans object
+  km = KMeans(n_clusters=k, random_state=0,init='k-means++')
+  km = km.fit(X)
   return km
 
 def assign_kmeans(km=None,X=None):
+  pass
+  # For each of the points in X, assign one of the means
+  # refer to predict() function of the KMeans in sklearn
+  # write your code ...
   ypred = km.predict(X)
   return ypred
 
 def compare_clusterings(ypred_1=None,ypred_2=None):
-  h=homogeneity_score(ypred_1,ypred_2)
-  c=completeness_score(ypred_1,ypred_2)
-  v=v_measure_score(ypred_1,ypred_2)
+  pass
+  # refer to sklearn documentation for homogeneity, completeness and vscore
+  h,c,v = 0,0,0 # you need to write your code to find proper values
+  h = sklearn.metrics.homogeneity_score(ypred_1, ypred_2)
+  c = sklearn.metrics.completeness_score(ypred_1, ypred_2)
+  v = sklearn.metrics.v_measure_score(ypred_1, ypred_2)
   return h,c,v
-
 
 ###### PART 2 ######
 
 def build_lr_model(X=None, y=None):
-  lr_model = LogisticRegression(random_state=0, solver='liblinear', fit_intercept=False)
-  lr_model.fit(X,y)
+  pass
+  lr_model = LogisticRegression(random_state=0,solver='liblinear').fit(X, y)
+  # write your code...
+  # Build logistic regression, refer to sklearn
   return lr_model
 
 def build_rf_model(X=None, y=None):
-  rf_model = RandomForestClassifier(random_state=400)
-  rf_model.fit(X,y)
+  pass
+  rf_model = RandomForestClassifier(max_depth=2, random_state=0).fit(X,y)
+  # write your code...
+  # Build Random Forest classifier, refer to sklearn
   return rf_model
 
 def get_metrics(model1=None,X=None,y=None):
+  pass
+  # Obtain accuracy, precision, recall, f1score, auc score - refer to sklearn metrics
   acc, prec, rec, f1, auc = 0,0,0,0,0
   y_pred = model1.predict(X)
-  acc = accuracy_score(y,y_pred)
-  prec=precision_score(y, y_pred,average='macro')
-  rec=recall_score(y, y_pred,average='macro')
-  f1=f1_score(y, y_pred,average='macro')
-  auc = roc_auc_score(y, model1.predict_proba(X), average='macro', multi_class='ovr')
+  y_pred_prob = model1.predict_proba(X)
+  acc=accuracy_score(y,y_pred)
+  prec=precision_score(y,y_pred,average='macro')
+  rec=recall_score(y,y_pred,average='macro')
+  f1=f1_score(y,y_pred,average='macro')
+  auc=roc_auc_score(y,y_pred_prob,average='macro',multi_class='ovr')
+  # write your code here...
   return acc, prec, rec, f1, auc
-
 
 def get_paramgrid_lr():
   # you need to return parameter grid dictionary for use in grid search cv
@@ -138,8 +167,8 @@ def perform_gridsearch_cv_multimetric(model1=None, param_grid=None, cv=5, X=None
           top1_scores.append(f1)
         
 
-  return top1_scores 
-
+  return top1_scores        
+###### PART 3 ######
 
 class MyNN(nn.Module):
   def __init__(self,inp_dim=64,hid_dim=13,num_classes=10):
@@ -206,3 +235,5 @@ def train_combined_encdec_predictor(mynn,X,y, epochs=11):
       except:
         pass
   return mynn
+
+
