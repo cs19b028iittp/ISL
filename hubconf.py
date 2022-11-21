@@ -74,60 +74,68 @@ def get_metrics(model1=None,X=None,y=None):
 
 
 def get_paramgrid_lr():
-  lr_param_grid = {'penalty':['l1','l2'],
-      "solver" : ["liblinear"]}
+  # you need to return parameter grid dictionary for use in grid search cv
+  # penalty: l1 or l2
+  lr_param_grid = {"C": np.logspace(-3, 3, 7), "penalty": ["l1", "l2"]}
+  # refer to sklearn documentation on grid search and logistic regression
+  # write your code here...
   return lr_param_grid
 
 def get_paramgrid_rf():
-  rf_param_grid = {"n_estimators": [1, 10, 100], "criterion": ["gini", "entropy"], "max_depth": [1, 10, None]}
+  # you need to return parameter grid dictionary for use in grid search cv
+  # n_estimators: 1, 10, 100
+  # criterion: gini, entropy
+  # maximum depth: 1, 10, None  
+  rf_param_grid = {
+        'max_depth': [1, 10, None],
+        'n_estimators': [1, 10, 100],
+        'criterion': ['gini', 'entropy']
+    }
+  # refer to sklearn documentation on grid search and random forest classifier
+  # write your code here...
   return rf_param_grid
 
-def perform_gridsearch_cv_multimetric(model1=None, param_grid=None, cv=5, X=None, y=None, metrics=['accuracy', 'roc_auc']):
+def perform_gridsearch_cv_multimetric(model1=None, param_grid=None, cv=5, X=None, y=None, metrics=['accuracy','roc_auc']):
+  
+  # you need to invoke sklearn grid search cv function
+  # refer to sklearn documentation
+  # the cv parameter can change, ie number of folds  
+  
+  # metrics = [] the evaluation program can change what metrics to choose
+  
+  grid_search_cv = GridSearchCV(model1, param_grid, cv=cv)
+  grid_search_cv.fit(X, y)
+  params = grid_search_cv.best_params_
+  acc, prec, rec, f1, auc = 0, 0, 0, 0, 0
+  if 'criterion' in params.keys():
+    rfc1 = RandomForestClassifier(random_state=42, n_estimators=params['n_estimators'], max_depth=params['max_depth'], criterion=params['criterion'])
+    rfc1.fit(X,y)
+    acc, prec, rec, f1, auc = get_metrics(rfc1, X, y)
+  else:
+    lg1 = LogisticRegression(C=params['C'], penalty=params['penalty'],solver = "liblinear")
+    lg1.fit(X, y)
+    acc, prec, rec, f1, auc = get_metrics(lg1, X, y)
+  # create a grid search cv object
+  # fit the object on X and y input above
+  # write your code here...
+  
+  # metric of choice will be asked here, refer to the-scoring-parameter-defining-model-evaluation-rules of sklearn documentation
+  
+  # refer to cv_results_ dictonary
+  # return top 1 score for each of the metrics given, in the order given in metrics=... list
+  
+  top1_scores = []
+  for k in metrics:
+      if k == 'accuracy':
+          top1_scores.append(acc)
+      elif k == 'recall':
+          top1_scores.append(rec)
+      elif k == 'roc_auc':
+          top1_scores.append(auc)
+      elif k == 'precision':
+          top1_scores.append(prec)
+      else:
+          top1_scores.append(f1)
+        
 
-    # you need to invoke sklearn grid search cv function
-    # refer to sklearn documentation
-    # the cv parameter can change, ie number of folds
-    grid_search_cv = GridSearchCV(model1, param_grid, cv=cv)
-    grid_search_cv.fit(X, y)
-
-    params = grid_search_cv.best_params_
-
-    print(params)
-
-    acc, prec, rec, f1, auc = 0, 0, 0, 0, 0
-    if 'criterion' in params.keys():
-        rfc1 = RandomForestClassifier(
-            random_state=42, n_estimators=params['n_estimators'], max_depth=params['max_depth'], criterion=params['criterion'])
-        rfc1.fit(X, y)
-        acc, prec, rec, f1, auc = get_metrics(rfc1, X, y)
-    else:
-        lg1 = LogisticRegression(C=params['C'], penalty=params['penalty'])
-        lg1.fit(X, y)
-        acc, prec, rec, f1, auc = get_metrics(lg1, X, y)
-    # metrics = [] the evaluation program can change what metrics to choose
-
-    # grid_search_cv = None
-    # create a grid search cv object
-    # fit the object on X and y input above
-    # write your code here...
-
-    # metric of choice will be asked here, refer to the-scoring-parameter-defining-model-evaluation-rules of sklearn documentation
-
-    # refer to cv_results_dictonary
-    # return top 1 score for each of the metrics given, in the order given in metrics=... list
-
-    top1_scores = []
-
-    for k in metrics:
-        if k == 'accuracy':
-            top1_scores.append(acc)
-        elif k == 'roc_auc':
-            top1_scores.append(auc)
-        elif k == 'precision':
-            top1_scores.append(prec)
-        elif k == 'recall':
-            top1_scores.append(rec)
-        else:
-            top1_scores.append(f1)
-
-    return top1_scores
+  return top1_scores 
